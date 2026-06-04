@@ -53,6 +53,24 @@ def get_version():
     return ''
 
 
+def get_package_name():
+    cargo_toml = Path(__file__).resolve().parent / "Cargo.toml"
+    with open(cargo_toml, encoding="utf-8") as fh:
+        for line in fh:
+            if line.startswith("name"):
+                return line.replace("name", "").replace("=", "").replace('"', '').strip()
+    return 'rustdesk'
+
+
+def get_bundle_identifier():
+    cargo_toml = Path(__file__).resolve().parent / "Cargo.toml"
+    with open(cargo_toml, encoding="utf-8") as fh:
+        for line in fh:
+            if line.startswith("identifier"):
+                return line.replace("identifier", "").replace("=", "").replace('"', '').strip()
+    return f'com.{get_package_name()}'
+
+
 def parse_rc_features(feature):
     available_features = {}
     apply_features = {}
@@ -174,7 +192,7 @@ def generate_build_script_for_docker():
             pushd /tmp && git clone https://github.com/SoLongAndThanksForAllThePizza/flutter_rust_bridge --depth=1 && popd
             pushd /tmp/flutter_rust_bridge/frb_codegen && cargo install --path . --locked && popd
             pushd flutter && flutter pub get && popd
-            ~/.cargo/bin/flutter_rust_bridge_codegen --rust-input ./src/flutter_ffi.rs --dart-output ./flutter/lib/generated_bridge.dart
+            ~/.cargo/bin/flutter_rust_bridge_codegen --rust-input ./src/flutter_ffi.rs --dart-output ./flutter/lib/generated_bridge.dart --class-name Rd
             # install vcpkg
             pushd /opt
             export VCPKG_ROOT=`pwd`/vcpkg
@@ -402,6 +420,7 @@ def build_deb_from_folder(version, binary_folder):
 
 
 def build_flutter_dmg(version, features):
+    app_name = get_package_name()
     if not skip_cargo:
         # set minimum osx build target, now is 10.14, which is the same as the flutter xcode project
         system2(
@@ -411,7 +430,9 @@ def build_flutter_dmg(version, features):
         "cp target/release/liblibrustdesk.dylib target/release/librustdesk.dylib")
     os.chdir('flutter')
     system2('flutter build macos --release')
-    system2('cp -rf ../target/release/service ./build/macos/Build/Products/Release/RustDesk.app/Contents/MacOS/')
+    app_path = f'./build/macos/Build/Products/Release/{app_name}.app'
+    system2(f'cp -rf ../target/release/service {app_path}/Contents/MacOS/')
+    system2(f'codesign --force --deep --sign - {app_path}')
     '''
     system2(
         "create-dmg --volname \"RustDesk Installer\" --window-pos 200 120 --window-size 800 400 --icon-size 100 --app-drop-link 600 185 --icon RustDesk.app 200 190 --hide-extension RustDesk.app rustdesk.dmg ./build/macos/Build/Products/Release/RustDesk.app")
