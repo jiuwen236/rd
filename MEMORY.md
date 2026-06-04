@@ -14,6 +14,12 @@ This fork renames the project from "RustDesk" to "rd" with bundle ID "com.rd", a
 - **flutter/macos/Runner.xcodeproj/project.pbxproj**: all bundle IDs → `com.rd`
 - **flutter/macos/Runner/Info.plist**: CFBundleURLName → `$(PRODUCT_BUNDLE_IDENTIFIER)`
 - **flutter/ios/** (project.pbxproj, Info.plist, exportOptions.plist, GoogleService-Info.plist): bundle IDs → `com.rd`
+- **res/**: all app icons (`.ico`, key `.png`, key `.svg`) replaced with `circle.png` / `circle.svg`
+- **flutter/macos/Runner/AppIcon.icns**: regenerated from `res/circle.png`
+- **flutter/assets/icon.svg**: replaced with `res/circle.svg`
+- **flutter/android/app/src/main/res/mipmap-*/**: launcher and status icons replaced with `res/circle.png`
+- **flutter/ios/Runner/Assets.xcassets/**: AppIcon and LaunchImage pngs replaced with `res/circle.png`
+- **flutter/windows/runner/resources/app_icon.ico**: regenerated from `res/circle.png`
 
 ## macOS Deployment Guide
 
@@ -82,3 +88,7 @@ flutter/build/macos/Build/Products/Release/rd.app/Contents/MacOS/rd
 - **`xcrun: unable to find xcodebuild`**: install full Xcode + `xcode-select --switch`.
 - **dyld Team ID mismatch on launch**: re-sign with
   `codesign --force --deep --sign - flutter/build/macos/Build/Products/Release/rd.app`.
+- **app icon still shows old image on macOS**: clear build output and rebuild, then
+  restart Finder/Dock or open a copied app bundle to bypass icon cache:
+  `rm -rf flutter/build/macos && python3 build.py --flutter`
+  `killall Finder; killall Dock`
