@@ -87,7 +87,7 @@ if(VCPKG_HOST_IS_WINDOWS)
     vcpkg_acquire_msys(MSYS_ROOT PACKAGES automake1.16)
     set(SHELL "${MSYS_ROOT}/usr/bin/bash.exe")
     vcpkg_add_to_path("${MSYS_ROOT}/usr/share/automake-1.16")
-    string(APPEND OPTIONS " --pkg-config=${CURRENT_HOST_INSTALLED_DIR}/tools/pkgconf/pkgconf${VCPKG_HOST_EXECUTABLE_SUFFIX}")
+    string(APPEND OPTIONS " --pkg-config=${CURRENT_HOST_INSTALLED_DIR}/tools/pkgconf/pkgconf${VCPKG_HOST_EXECUTABLE_SUFFIX} ")
 else()
     find_program(SHELL bash)
 endif()
@@ -176,6 +176,7 @@ elseif(VCPKG_TARGET_IS_IOS)
 ")
 elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
     string(APPEND OPTIONS "\
+--host-os=mingw64 \
 --target-os=android \
 --disable-asm \
 --disable-iconv \
@@ -226,7 +227,14 @@ if(VCPKG_DETECTED_CMAKE_C_COMPILER)
     string(APPEND OPTIONS " --cc=${CC_filename}")
 
     if(VCPKG_HOST_IS_WINDOWS)
-        string(APPEND OPTIONS " --host_cc=${CC_filename}")
+        if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
+            # The Android NDK compiler cannot compile FFmpeg's host-side
+            # configure probes on Windows. Use the native LLVM compiler for
+            # those probes while retaining the NDK compiler for the target.
+            string(APPEND OPTIONS " --host_cc=C:/PROGRA~1/LLVM/bin/clang.exe")
+        else()
+            string(APPEND OPTIONS " --host_cc=${CC_filename}")
+        endif()
     endif()
 
     list(APPEND prog_env "${CC_path}")

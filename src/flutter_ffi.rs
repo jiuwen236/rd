@@ -2850,8 +2850,8 @@ pub fn main_get_common(key: String) -> String {
                 crate::platform::windows::is_msi_installed(),
                 crate::common::is_custom_client(),
             ) {
-                (Ok(true), false) => format!("rustdesk-{_version}-x86_64.msi"),
-                (Ok(true), true) | (Ok(false), _) => format!("rustdesk-{_version}-x86_64.exe"),
+                (Ok(true), false) => format!("rd-{_version}-x86_64.msi"),
+                (Ok(true), true) | (Ok(false), _) => format!("rd-{_version}-x86_64.exe"),
                 (Err(e), _) => {
                     log::error!("Failed to check if is msi: {}", e);
                     format!("error:update-failed-check-msi-tip")

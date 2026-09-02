@@ -7,7 +7,7 @@
 libsciter-gtk.so
 src/ui/inline.rs
 extractor
-__pycache__
+__*
 src/version.rs
 *dmg
 *exe
@@ -53,6 +53,7 @@ lib/generated_bridge.dart
 examples/**/target/
 # ===
 vcpkg_installed
+.build-deps/
 flutter/lib/generated_plugin_registrant.dart
 libsciter.dylib
 flutter/web/
